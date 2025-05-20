@@ -178,27 +178,32 @@ def test_model_reproducibility(sample_data, preprocessor):
         predictions1, predictions2
     ), "モデルの予測結果に再現性がありません"
 
-#過去バージョンのモデルと比較して性能劣化がないか検証
+
+# 過去バージョンのモデルと比較して性能劣化がないか検証
 def test_model_performance_regression(train_model):
 
     model, X_test, y_test = train_model
-    
+
     # 過去モデルのパス
     PREVIOUS_MODEL_PATH = os.path.join(MODEL_DIR, "previous_model.pkl")
-    
+
     if not os.path.exists(PREVIOUS_MODEL_PATH):
         pytest.skip("過去モデルが存在しないためテストをスキップします")
-    
+
     # 過去モデルと現在モデルの性能比較
     with open(PREVIOUS_MODEL_PATH, "rb") as f:
         previous_model = pickle.load(f)
-    
+
     y_pred_current = model.predict(X_test)
     y_pred_previous = previous_model.predict(X_test)
-    
+
     acc_current = accuracy_score(y_test, y_pred_current)
     acc_previous = accuracy_score(y_test, y_pred_previous)
-    
-    print(f"現在/過去の精度: {acc_current:.6f}/{acc_previous:.6f} (差: {acc_current-acc_previous:.6f})")
-    
-    assert acc_current >= (acc_previous - 0.05), f"モデル性能が低下: {acc_previous:.6f} → {acc_current:.6f}"
+
+    print(
+        f"現在/過去の精度: {acc_current:.6f}/{acc_previous:.6f} (差: {acc_current-acc_previous:.6f})"
+    )
+
+    assert acc_current >= (
+        acc_previous - 0.05
+    ), f"モデル性能が低下: {acc_previous:.6f} → {acc_current:.6f}"
