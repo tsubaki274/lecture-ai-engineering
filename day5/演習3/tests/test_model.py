@@ -135,7 +135,7 @@ def test_model_inference_time(train_model):
 
     inference_time = end_time - start_time
 
-        # 追加：推論時間を表示
+    # 追加：推論時間を表示
     print(f"推論時間: {inference_time:.6f}秒")
 
     # 推論時間が1秒未満であることを確認
