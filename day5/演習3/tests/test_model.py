@@ -117,6 +117,9 @@ def test_model_accuracy(train_model):
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
 
+    # 追加：精度を表示
+    print(f"モデルの精度: {accuracy:.6f}")
+
     # Titanicデータセットでは0.75以上の精度が一般的に良いとされる
     assert accuracy >= 0.75, f"モデルの精度が低すぎます: {accuracy}"
 
@@ -131,6 +134,9 @@ def test_model_inference_time(train_model):
     end_time = time.time()
 
     inference_time = end_time - start_time
+
+    # 追加：推論時間を表示
+    print(f"推論時間: {inference_time:.6f}秒")
 
     # 推論時間が1秒未満であることを確認
     assert inference_time < 1.0, f"推論時間が長すぎます: {inference_time}秒"
@@ -171,3 +177,33 @@ def test_model_reproducibility(sample_data, preprocessor):
     assert np.array_equal(
         predictions1, predictions2
     ), "モデルの予測結果に再現性がありません"
+
+
+# 過去バージョンのモデルと比較して性能劣化がないか検証
+def test_model_performance_regression(train_model):
+
+    model, X_test, y_test = train_model
+
+    # 過去モデルのパス
+    PREVIOUS_MODEL_PATH = os.path.join(MODEL_DIR, "previous_model.pkl")
+
+    if not os.path.exists(PREVIOUS_MODEL_PATH):
+        pytest.skip("過去モデルが存在しないためテストをスキップします")
+
+    # 過去モデルと現在モデルの性能比較
+    with open(PREVIOUS_MODEL_PATH, "rb") as f:
+        previous_model = pickle.load(f)
+
+    y_pred_current = model.predict(X_test)
+    y_pred_previous = previous_model.predict(X_test)
+
+    acc_current = accuracy_score(y_test, y_pred_current)
+    acc_previous = accuracy_score(y_test, y_pred_previous)
+
+    print(
+        f"現在/過去の精度: {acc_current:.6f}/{acc_previous:.6f} (差: {acc_current-acc_previous:.6f})"
+    )
+
+    assert acc_current >= (
+        acc_previous - 0.05
+    ), f"モデル性能が低下: {acc_previous:.6f} → {acc_current:.6f}"
